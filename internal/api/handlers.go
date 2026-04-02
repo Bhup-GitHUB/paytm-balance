@@ -62,9 +62,11 @@ func TransferHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	now := time.Now().UnixMilli()
+	transactionID := uuid.New().String()
 
 	debitEntry := types.Entry{
 		ID:             uuid.New().String(),
+		TransactionID:  transactionID,
 		AccountID:      req.FromAccount,
 		Amount:         paise,
 		Type:           "debit",
@@ -74,6 +76,7 @@ func TransferHandler(w http.ResponseWriter, r *http.Request) {
 
 	creditEntry := types.Entry{
 		ID:             uuid.New().String(),
+		TransactionID:  transactionID,
 		AccountID:      req.ToAccount,
 		Amount:         paise,
 		Type:           "credit",

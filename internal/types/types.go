@@ -2,6 +2,7 @@ package types
 
 type Entry struct {
 	ID             string `json:"id"`
+	TransactionID  string `json:"transaction_id"`
 	AccountID      string `json:"account_id"`
 	Amount         int64  `json:"amount"`
 	Type           string `json:"type"`
