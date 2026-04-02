@@ -81,17 +81,15 @@ func TransferHandler(w http.ResponseWriter, r *http.Request) {
 		Timestamp:      now,
 	}
 
-	store.AddEntries(debitEntry, creditEntry)
-
-	fmt.Printf("Ledger appended 2 entries for amount %s (paise: %d)\n", req.Amount, paise)
-
 	finalResponse := types.TransferResponse{
 		Status:  "success",
 		Entries: []types.Entry{debitEntry, creditEntry},
 		Message: "transfer complete",
 	}
 
-	store.SaveIdempotency(req.IdempotencyKey, finalResponse)
+	store.ExecuteAtomicTransfer(req.IdempotencyKey, finalResponse, debitEntry, creditEntry)
+
+	fmt.Printf("Ledger atomically appended 2 entries for amount %s (paise: %d)\n", req.Amount, paise)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(finalResponse)

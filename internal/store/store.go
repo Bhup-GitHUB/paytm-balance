@@ -12,14 +12,16 @@ var (
 	idempotencyLock sync.RWMutex
 )
 
-// AddEntries appends new entries to the core ledger.
-func AddEntries(entries ...types.Entry) {
+func ExecuteAtomicTransfer(key string, response types.TransferResponse, entries ...types.Entry) {
 	ledgerMutex.Lock()
+	idempotencyLock.Lock()
 	defer ledgerMutex.Unlock()
+	defer idempotencyLock.Unlock()
+
 	ledger = append(ledger, entries...)
+	idempotencyMap[key] = response
 }
 
-// GetBalance calculates the balance of an account from the ledger directly.
 func GetBalance(accountID string) int64 {
 	var sum int64 = 0
 	ledgerMutex.RLock()
@@ -37,17 +39,9 @@ func GetBalance(accountID string) int64 {
 	return sum
 }
 
-// CheckIdempotency checks if a transfer key already exists.
 func CheckIdempotency(key string) (types.TransferResponse, bool) {
 	idempotencyLock.RLock()
 	defer idempotencyLock.RUnlock()
 	resp, exists := idempotencyMap[key]
 	return resp, exists
-}
-
-// SaveIdempotency saves the transfer response for a key.
-func SaveIdempotency(key string, response types.TransferResponse) {
-	idempotencyLock.Lock()
-	defer idempotencyLock.Unlock()
-	idempotencyMap[key] = response
 }
